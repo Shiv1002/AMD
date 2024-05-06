@@ -13,7 +13,11 @@ class AppInfo {
   final Map<String, dynamic> appMetadata;
   final List<dynamic> permission;
   final List<dynamic> actions;
+  final Map<String, dynamic> dynamic_data;
+  final int size;
   final String result;
+  final int MaliciousScore;
+  final int SuspicousScore;
 
   AppInfo({
     required this.sha256Hash,
@@ -22,17 +26,25 @@ class AppInfo {
     required this.appMetadata,
     required this.permission,
     required this.actions,
+    required this.dynamic_data,
+    required this.size,
     required this.result,
+    required this.MaliciousScore,
+    required this.SuspicousScore,
   });
 
   factory AppInfo.fromJson(Map<String, dynamic> json) {
     return AppInfo(
       sha256Hash: json['sha256'],
-      sha1Hash:json['sha1'],
-      md5Hash:json['md5'],
-      appMetadata: json['App metadata'],
+      sha1Hash: json['sha1'],
+      md5Hash: json['md5'],
+      appMetadata: json['App_metadata'],
       permission: json['Permission'],
       actions: json['Actions'],
+      dynamic_data: json['Dynamic_data'],
+      MaliciousScore: json['malScore'],
+      SuspicousScore: json['susScore'],
+      size: json['size'],
       result: json['Result'],
     );
   }
@@ -40,11 +52,15 @@ class AppInfo {
   Map<String, dynamic> toJson() {
     return {
       'sha256Hash': sha256Hash,
-      'sha1Hash':sha1Hash,
-      'md5Hash':md5Hash,
+      'sha1Hash': sha1Hash,
+      'md5Hash': md5Hash,
       'App metadata': appMetadata,
       'Permission': permission,
       'Actions': actions,
+      'size': size,
+      'Dynamic data': dynamic_data,
+      'Malicious Score': MaliciousScore,
+      'Suspicous Score': SuspicousScore,
       'Result': result,
     };
   }
@@ -69,13 +85,16 @@ class MetadataScreen extends StatelessWidget {
     bool md5Hash = mp.md5Hash;
     var appMetadata = mp.appMetadata;
     var permissions = mp.permission;
+    var dynaData = mp.dynamic_data;
+    var size = mp.size;
     var actions = mp.actions;
     var result = mp.result;
-
+    int mlscore = mp.MaliciousScore;
+    int susscore = mp.SuspicousScore;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("App Metadata"),
+        title: Text('${appMetadata['Package Name:']} Metadata'),
       ),
       body: SingleChildScrollView(
           child: Padding(
@@ -92,11 +111,39 @@ class MetadataScreen extends StatelessWidget {
             // md5matching
             _getHashMatchContainer('MD5', md5Hash),
             _getMetaData('MetaData', appMetadata),
+
             _getListData('Permissions', permissions),
+
             _getListData('Actions', actions),
 
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 15),
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              // alignment: Alignment.topLeft,
+              decoration: BoxDecoration(
+                color: Colors.white, // Change this to your desired color
+                border: Border.all(
+                  color: Colors.grey,
+                  width: 1.0,
+                ),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              width: double.infinity,
+              child: Center(
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text('Size',style: TextStyle(fontSize: 25, fontWeight: FontWeight.w500)),
+                    ),
+                    Text('$size Bytes',style: TextStyle(fontSize: 20, fontWeight: FontWeight.w300))
+                  ],
+                ),
+              ),
+            ),
+            _getScore(mlscore, susscore),
             // result for file
-            if (mp.result.endsWith('Benign'))
+            if (mp.result.endsWith('benign'))
               _getResultSafe()
             else
               _getResultMal()
@@ -105,11 +152,90 @@ class MetadataScreen extends StatelessWidget {
       )),
     );
   }
+}
+Widget _getScore(mlscore,susscore){
+  return Container(
+      margin: const EdgeInsets.symmetric(vertical: 15),
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      // alignment: Alignment.topLeft,
+      decoration: BoxDecoration(
+        color: Colors.white, // Change this to your desired color
+        border: Border.all(
+          color: Colors.grey,
+          width: 1.0,
+        ),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      width: double.infinity,
+    child: Column(
+      children: [
+        Text('Scores',style: TextStyle(fontSize: 25, fontWeight: FontWeight.w500),),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 4),
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: Colors.white, // Change this to your desired color
+                border: Border.all(
+                  color: Colors.grey,
+                  width: 1.0,
+                ),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                children: [
+                  Text('Malicous',style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),),
+                  Container(
+                    padding: const EdgeInsets.all( 20),
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      decoration: BoxDecoration(
 
+                        color: Colors.redAccent, // Change this to your desired color
 
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      child: Text('$mlscore', style: TextStyle(fontSize: 20,color: Colors.white, fontWeight: FontWeight.w500))),
+                ],
+              ),
+            ),
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 4),
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: Colors.white, // Change this to your desired color
+                border: Border.all(
+                  color: Colors.grey,
+                  width: 1.0,
+                ),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                children: [
+                  Text('Malicous',style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),),
+                  Container(
+                      padding: const EdgeInsets.all( 20),
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      decoration: BoxDecoration(
+
+                        color: Colors.amber, // Change this to your desired color
+
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      child: Text('$susscore', style: TextStyle(fontSize: 20,color: Colors.white, fontWeight: FontWeight.w500))),
+                ],
+              ),
+            ),
+
+          ],
+        ),
+      ],
+    )
+  );
 }
 
-Widget _getHashMatchContainer(hash,isMatched){
+Widget _getHashMatchContainer(hash, isMatched) {
   return Container(
     margin: const EdgeInsets.symmetric(vertical: 10),
     alignment: Alignment.topLeft,
@@ -145,8 +271,7 @@ Widget _getHashMatchContainer(hash,isMatched){
         children: [
           Center(
             child: Text('$hash Hash Matching',
-                style: TextStyle(
-                    fontSize: 25, fontWeight: FontWeight.w500)),
+                style: TextStyle(fontSize: 25, fontWeight: FontWeight.w500)),
           ),
           if (isMatched) _getHashMatch() else _getHashNotMatch()
         ],
@@ -154,21 +279,20 @@ Widget _getHashMatchContainer(hash,isMatched){
     ),
   );
 }
+
 Widget _buildList(List<dynamic> items) {
   return Padding(
     padding: const EdgeInsets.all(8.0),
     child: Column(
-
         crossAxisAlignment: CrossAxisAlignment.start,
         children: items
             .map((item) => Text(item,
-            style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-                height: 1.5)))
+                style: TextStyle(
+                    fontSize: 15, fontWeight: FontWeight.w500, height: 1.5)))
             .toList()),
   );
 }
+
 Widget _buildMetadata(Map<String, dynamic> data) {
   return SingleChildScrollView(
     child: Column(
@@ -178,19 +302,19 @@ Widget _buildMetadata(Map<String, dynamic> data) {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: data.entries
                 .map((entry) => Text("${entry.key}: ${entry.value}",
-                style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    height: 1.5)))
+                    style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        height: 1.5)))
                 .toList()),
         SizedBox(height: 14.0)
       ],
     ),
   );
 }
-Widget _getListData(String title,List<dynamic> items){
-  return Container(
 
+Widget _getListData(String title, List<dynamic> items) {
+  return Container(
     margin: const EdgeInsets.symmetric(vertical: 15),
     padding: const EdgeInsets.symmetric(vertical: 8),
     // alignment: Alignment.topLeft,
@@ -201,16 +325,13 @@ Widget _getListData(String title,List<dynamic> items){
         width: 1.0,
       ),
       borderRadius: BorderRadius.circular(10),
-
     ),
     width: double.infinity,
     child: Padding(
-
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: Column(
-        crossAxisAlignment:  CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           Center(
             child: Text(title,
                 style: TextStyle(fontSize: 25, fontWeight: FontWeight.w500)),
@@ -221,7 +342,8 @@ Widget _getListData(String title,List<dynamic> items){
     ),
   );
 }
-Widget _getMetaData(String title,Map<String, dynamic> data){
+
+Widget _getMetaData(String title, Map<String, dynamic> data) {
   return Container(
     margin: const EdgeInsets.symmetric(vertical: 15),
     padding: const EdgeInsets.symmetric(vertical: 8),
@@ -233,7 +355,6 @@ Widget _getMetaData(String title,Map<String, dynamic> data){
         width: 1.0,
       ),
       borderRadius: BorderRadius.circular(10),
-
     ),
     width: double.infinity,
     child: Column(
@@ -245,6 +366,7 @@ Widget _getMetaData(String title,Map<String, dynamic> data){
     ),
   );
 }
+
 Widget _getHashNotMatch() {
   return Container(
       margin: const EdgeInsets.symmetric(vertical: 10),
@@ -263,11 +385,9 @@ Widget _getHashNotMatch() {
             child: const Icon(Icons.security),
           ),
           const Text(
-            'Not matched',
+            'No History of Malware!!',
             style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w500),
+                color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500),
           ),
         ],
       ));
@@ -290,17 +410,16 @@ Widget _getHashMatch() {
               padding: const EdgeInsets.symmetric(horizontal: 10),
               child: const Icon(Icons.warning_rounded)),
           const Text(
-            'Matched',
+            'Malcicous File detected',
             style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w500),
+                color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500),
           ),
         ],
       ));
 }
-Widget _getResultMal(){
-  return    Container(
+
+Widget _getResultMal() {
+  return Container(
       margin: const EdgeInsets.symmetric(vertical: 10),
       padding: const EdgeInsets.all(8),
       width: double.infinity,
@@ -324,8 +443,9 @@ Widget _getResultMal(){
         ],
       ));
 }
-Widget _getResultSafe(){
-  return  Container(
+
+Widget _getResultSafe() {
+  return Container(
       margin: const EdgeInsets.symmetric(vertical: 10),
       padding: const EdgeInsets.all(8),
       width: double.infinity,
